@@ -8,7 +8,6 @@
     <style>
         :root {
             --primary-blue: #0088cc;
-            --accent-blue: #179cde;
             --dark-blue: #006699;
             --bg-color: #f0f4f8;
             --card-bg: #ffffff;
@@ -27,7 +26,6 @@
             box-sizing: border-box;
         }
 
-        /* Top Header Card */
         .header-card {
             background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
             color: #ffffff;
@@ -50,7 +48,6 @@
             opacity: 0.85;
         }
 
-        /* Period Switcher Tabs */
         .tabs {
             display: flex;
             background: #e2e8f0;
@@ -77,7 +74,6 @@
             box-shadow: 0 2px 8px rgba(0, 136, 204, 0.3);
         }
 
-        /* Balance Display */
         .card {
             background: var(--card-bg);
             border-radius: 16px;
@@ -113,7 +109,6 @@
         .income { color: var(--green); font-weight: 700; }
         .expense { color: var(--red); font-weight: 700; }
 
-        /* Categories */
         .category-item {
             display: flex;
             justify-content: space-between;
@@ -137,7 +132,6 @@
             color: var(--dark-blue);
         }
 
-        /* Buttons */
         .actions {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -173,14 +167,12 @@
         <p>Live Mobile Money Overview</p>
     </div>
 
-    <!-- Switcher -->
     <div class="tabs">
         <div class="tab" onclick="switchTab('daily')">Today</div>
         <div class="tab" onclick="switchTab('weekly')">This Week</div>
         <div class="tab active" onclick="switchTab('monthly')">This Month</div>
     </div>
 
-    <!-- Balance -->
     <div class="card">
         <div class="card-title" id="card-title-text">Monthly Net Balance</div>
         <div class="balance-amount" id="net-balance">0.00 ETB</div>
@@ -190,7 +182,6 @@
         </div>
     </div>
 
-    <!-- Categories -->
     <div class="card">
         <div class="card-title">Category Breakdown</div>
         <div class="category-item">
@@ -217,20 +208,19 @@
         tg.ready();
         tg.expand();
 
-        // Default Data container
         let liveData = {
             daily: { net: "0.00", income: "0.00", expense: "0.00", transport: "0.00", bills: "0.00", general: "0.00" },
             weekly: { net: "0.00", income: "0.00", expense: "0.00", transport: "0.00", bills: "0.00", general: "0.00" },
             monthly: { net: "0.00", income: "0.00", expense: "0.00", transport: "0.00", bills: "0.00", general: "0.00" }
         };
 
-        // Parse query params passed from Python URL
+        // Check URL parameters for embedded data payload
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('data')) {
             try {
                 liveData = JSON.parse(decodeURIComponent(urlParams.get('data')));
             } catch(e) {
-                console.log("Using fallback values", e);
+                console.log("Error parsing URL data", e);
             }
         }
 
@@ -265,7 +255,6 @@
             }
         }
 
-        // Initial render
         renderData('monthly');
     </script>
 </body>
