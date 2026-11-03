@@ -2,328 +2,271 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Finance Tracker Mini App</title>
-    <!-- Telegram WebApp SDK -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jojo Financial Dashboard</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        :root {
+            --primary-blue: #0088cc;
+            --accent-blue: #179cde;
+            --dark-blue: #006699;
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-main: #1c2b36;
+            --text-sub: #6c7a89;
+            --green: #27ae60;
+            --red: #e74c3c;
+        }
+
         body {
-            background-color: var(--tg-theme-bg-color, #0f172a);
-            color: var(--tg-theme-text-color, #f8fafc);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 16px;
+            box-sizing: border-box;
         }
-        .tg-card {
-            background-color: var(--tg-theme-secondary-bg-color, #1e293b);
+
+        /* Top Header Card */
+        .header-card {
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            color: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 15px rgba(0, 136, 204, 0.3);
         }
-        .tg-button {
-            background-color: var(--tg-theme-button-color, #2563eb);
-            color: var(--tg-theme-button-text-color, #ffffff);
+
+        .header-card h1 {
+            font-size: 20px;
+            margin: 0 0 4px 0;
+            font-weight: 700;
         }
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
+
+        .header-card p {
+            margin: 0;
+            font-size: 13px;
+            opacity: 0.85;
         }
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+
+        /* Period Switcher Tabs */
+        .tabs {
+            display: flex;
+            background: #e2e8f0;
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 16px;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            color: var(--text-sub);
+            transition: all 0.2s ease;
+        }
+
+        .tab.active {
+            background: var(--primary-blue);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 136, 204, 0.3);
+        }
+
+        /* Balance Display */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        .card-title {
+            font-size: 12px;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .balance-amount {
+            font-size: 30px;
+            font-weight: 800;
+            color: var(--primary-blue);
+            margin-bottom: 14px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            border-top: 1px solid #edf2f7;
+            padding-top: 12px;
+        }
+
+        .income { color: var(--green); font-weight: 700; }
+        .expense { color: var(--red); font-weight: 700; }
+
+        /* Categories */
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            padding: 8px 0;
+            border-bottom: 1px dashed #edf2f7;
+        }
+
+        .category-item:last-child {
+            border-bottom: none;
+        }
+
+        .category-name {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .category-val {
+            font-weight: 700;
+            color: var(--dark-blue);
+        }
+
+        /* Buttons */
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            background: var(--primary-blue);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 136, 204, 0.25);
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+            box-shadow: none;
         }
     </style>
 </head>
-<body class="min-h-screen pb-8 px-4 pt-4 select-none">
-    
-    <!-- Top Header -->
-    <div class="flex justify-between items-center mb-6">
-        <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
-                <i data-lucide="wallet" class="w-5 h-5"></i>
-            </div>
-            <div>
-                <h1 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Financial Overview</h1>
-                <p id="user-greeting" class="text-base font-bold text-slate-100">Welcome Back</p>
-            </div>
-        </div>
-        <button id="sync-btn" onclick="syncData()" class="p-2.5 rounded-xl tg-card hover:bg-slate-700/50 transition-colors border border-slate-700/50">
-            <i data-lucide="refresh-cw" class="w-4 h-4 text-blue-400"></i>
-        </button>
+<body>
+
+    <div class="header-card">
+        <h1>Jojo Financial Tracker</h1>
+        <p>Live Mobile Money Overview</p>
     </div>
 
-    <!-- Period Tabs -->
-    <div class="flex p-1 bg-slate-900/60 rounded-2xl mb-6 border border-slate-800">
-        <button onclick="switchPeriod('daily')" id="tab-daily" class="flex-1 py-2 text-xs font-semibold rounded-xl transition-all duration-200 text-slate-400">Today</button>
-        <button onclick="switchPeriod('weekly')" id="tab-weekly" class="flex-1 py-2 text-xs font-semibold rounded-xl transition-all duration-200 text-slate-400">This Week</button>
-        <button onclick="switchPeriod('monthly')" id="tab-monthly" class="flex-1 py-2 text-xs font-semibold rounded-xl transition-all duration-200 tg-button font-bold text-white shadow-md">This Month</button>
+    <!-- Switcher -->
+    <div class="tabs">
+        <div class="tab" onclick="switchTab('daily')">Today</div>
+        <div class="tab" onclick="switchTab('weekly')">This Week</div>
+        <div class="tab active" onclick="switchTab('monthly')">This Month</div>
     </div>
 
-    <!-- Financial Cards -->
-    <div class="grid grid-cols-1 gap-4 mb-6">
-        <!-- Main Net Balance Card -->
-        <div class="tg-card p-5 rounded-3xl border border-slate-700/50 shadow-xl relative overflow-hidden">
-            <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-blue-500/10 rounded-full blur-xl pointer-events-none"></div>
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Net Balance</span>
-            <div class="flex items-baseline space-x-2 mt-1 mb-4">
-                <span id="net-balance" class="text-3xl font-extrabold text-white tracking-tight">0.00</span>
-                <span class="text-xs font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">ETB</span>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-700/40">
-                <div class="flex items-center space-x-2.5">
-                    <div class="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                        <i data-lucide="arrow-down-left" class="w-4 h-4"></i>
-                    </div>
-                    <div>
-                        <p class="text-[10px] text-slate-400 font-medium">Income</p>
-                        <p id="total-income" class="text-sm font-semibold text-emerald-400">0.00 ETB</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-2.5">
-                    <div class="w-7 h-7 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
-                        <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
-                    </div>
-                    <div>
-                        <p class="text-[10px] text-slate-400 font-medium">Expenses</p>
-                        <p id="total-expense" class="text-sm font-semibold text-rose-400">0.00 ETB</p>
-                    </div>
-                </div>
-            </div>
+    <!-- Balance -->
+    <div class="card">
+        <div class="card-title" id="card-title-text">Monthly Net Balance</div>
+        <div class="balance-amount" id="net-balance">0.00 ETB</div>
+        <div class="stats-row">
+            <div>Income: <span class="income" id="total-income">+0.00 ETB</span></div>
+            <div>Expenses: <span class="expense" id="total-expense">-0.00 ETB</span></div>
         </div>
     </div>
 
-    <!-- Category Progress Breakdown -->
-    <div class="tg-card p-5 rounded-3xl border border-slate-700/50 mb-6">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-sm font-bold text-slate-200">Expense Categories</h3>
-            <span id="period-label" class="text-[11px] font-medium text-slate-400">This Month</span>
+    <!-- Categories -->
+    <div class="card">
+        <div class="card-title">Category Breakdown</div>
+        <div class="category-item">
+            <span class="category-name">🚗 Transport</span>
+            <span class="category-val" id="cat-transport">0.00 ETB</span>
         </div>
-
-        <div class="space-y-4">
-            <!-- Transport -->
-            <div>
-                <div class="flex justify-between text-xs mb-1.5">
-                    <span class="flex items-center space-x-1.5 text-slate-300 font-medium">
-                        <i data-lucide="car" class="w-3.5 h-3.5 text-amber-400"></i>
-                        <span>Transport (Feres/Ride)</span>
-                    </span>
-                    <span id="cat-transport-amount" class="font-semibold text-slate-200">0.00 ETB</span>
-                </div>
-                <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                    <div id="cat-transport-bar" class="bg-amber-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
-                </div>
-            </div>
-
-            <!-- Bills & Utilities -->
-            <div>
-                <div class="flex justify-between text-xs mb-1.5">
-                    <span class="flex items-center space-x-1.5 text-slate-300 font-medium">
-                        <i data-lucide="receipt" class="w-3.5 h-3.5 text-purple-400"></i>
-                        <span>Bills & Utilities</span>
-                    </span>
-                    <span id="cat-bills-amount" class="font-semibold text-slate-200">0.00 ETB</span>
-                </div>
-                <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                    <div id="cat-bills-bar" class="bg-purple-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
-                </div>
-            </div>
-
-            <!-- General -->
-            <div>
-                <div class="flex justify-between text-xs mb-1.5">
-                    <span class="flex items-center space-x-1.5 text-slate-300 font-medium">
-                        <i data-lucide="shopping-bag" class="w-3.5 h-3.5 text-blue-400"></i>
-                        <span>General & Shopping</span>
-                    </span>
-                    <span id="cat-general-amount" class="font-semibold text-slate-200">0.00 ETB</span>
-                </div>
-                <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                    <div id="cat-general-bar" class="bg-blue-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
-                </div>
-            </div>
+        <div class="category-item">
+            <span class="category-name">⚡ Bills & Utilities</span>
+            <span class="category-val" id="cat-bills">0.00 ETB</span>
+        </div>
+        <div class="category-item">
+            <span class="category-name">📦 General Expenses</span>
+            <span class="category-val" id="cat-general">0.00 ETB</span>
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="grid grid-cols-2 gap-3 mb-6">
-        <button onclick="triggerAction('backup')" class="tg-card p-3.5 rounded-2xl border border-slate-700/50 flex items-center justify-center space-x-2 hover:bg-slate-700/40 active:scale-95 transition-all">
-            <i data-lucide="database" class="w-4 h-4 text-emerald-400"></i>
-            <span class="text-xs font-semibold text-slate-200">Backup Data</span>
-        </button>
-        <button onclick="triggerAction('csv')" class="tg-card p-3.5 rounded-2xl border border-slate-700/50 flex items-center justify-center space-x-2 hover:bg-slate-700/40 active:scale-95 transition-all">
-            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-blue-400"></i>
-            <span class="text-xs font-semibold text-slate-200">Export CSV</span>
-        </button>
-    </div>
-
-    <!-- Recent Transactions List -->
-    <div class="tg-card p-5 rounded-3xl border border-slate-700/50">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-sm font-bold text-slate-200">Recent Transactions</h3>
-            <span class="text-[11px] text-blue-400 font-medium">Live Sync</span>
-        </div>
-
-        <div id="tx-list" class="space-y-3">
-            <!-- Dynamic Transaction Items Inserted Here -->
-        </div>
+    <div class="actions">
+        <button class="btn btn-secondary" onclick="triggerAction('backup')">💾 Backup DB</button>
+        <button class="btn" onclick="triggerAction('refresh')">🔄 Refresh</button>
     </div>
 
     <script>
-        // Initialize Telegram WebApp SDK
-        const tg = window.Telegram?.WebApp;
-        if (tg) {
-            tg.ready();
-            tg.expand();
-            if (tg.initDataUnsafe?.user) {
-                document.getElementById('user-greeting').textContent = tg.initDataUnsafe.user.first_name || "User";
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        // Default Data container
+        let liveData = {
+            daily: { net: "0.00", income: "0.00", expense: "0.00", transport: "0.00", bills: "0.00", general: "0.00" },
+            weekly: { net: "0.00", income: "0.00", expense: "0.00", transport: "0.00", bills: "0.00", general: "0.00" },
+            monthly: { net: "0.00", income: "0.00", expense: "0.00", transport: "0.00", bills: "0.00", general: "0.00" }
+        };
+
+        // Parse query params passed from Python URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('data')) {
+            try {
+                liveData = JSON.parse(decodeURIComponent(urlParams.get('data')));
+            } catch(e) {
+                console.log("Using fallback values", e);
             }
         }
-
-        // Mock Transaction Data mimicking SQLite DB records
-        const sampleData = {
-            daily: {
-                income: 0.00,
-                expense: 300.00,
-                categories: { transport: 300.00, bills: 0.00, general: 0.00 },
-                transactions: [
-                    { id: 1, bank: 'Ebirr', type: 'expense', amount: 300.00, category: 'Transport', note: 'Merchant Feres', date: 'Today, 09:14 AM' }
-                ]
-            },
-            weekly: {
-                income: 8224.98,
-                expense: 867.28,
-                categories: { transport: 550.00, bills: 150.00, general: 167.28 },
-                transactions: [
-                    { id: 1, bank: 'Ebirr', type: 'expense', amount: 300.00, category: 'Transport', note: 'Merchant Feres', date: 'Today, 09:14 AM' },
-                    { id: 2, bank: 'CBE', type: 'income', amount: 5000.00, category: 'Income', note: 'Transfer Recv', date: 'Yesterday' },
-                    { id: 3, bank: 'Telebirr', type: 'expense', amount: 150.00, category: 'Bills & Utilities', note: 'Ethio Telecom Airtime', date: 'Oct 28' },
-                    { id: 4, bank: 'Telebirr', type: 'income', amount: 3224.98, category: 'Income', note: 'Payment Recv', date: 'Oct 26' }
-                ]
-            },
-            monthly: {
-                income: 8224.98,
-                expense: 867.28,
-                categories: { transport: 550.00, bills: 150.00, general: 167.28 },
-                transactions: [
-                    { id: 1, bank: 'Ebirr', type: 'expense', amount: 300.00, category: 'Transport', note: 'Merchant Feres', date: 'Today, 09:14 AM' },
-                    { id: 2, bank: 'CBE', type: 'income', amount: 5000.00, category: 'Income', note: 'Transfer Recv', date: 'Yesterday' },
-                    { id: 3, bank: 'Telebirr', type: 'expense', amount: 150.00, category: 'Bills & Utilities', note: 'Ethio Telecom Airtime', date: 'Oct 28' },
-                    { id: 4, bank: 'Telebirr', type: 'income', amount: 3224.98, category: 'Income', note: 'Payment Recv', date: 'Oct 26' }
-                ]
-            }
-        };
 
         let currentPeriod = 'monthly';
 
-        function switchPeriod(period) {
-            currentPeriod = period;
-
-            // Reset Tab UI
-            ['daily', 'weekly', 'monthly'].forEach(p => {
-                const btn = document.getElementById(`tab-${p}`);
-                if (p === period) {
-                    btn.className = "flex-1 py-2 text-xs font-bold rounded-xl transition-all duration-200 tg-button text-white shadow-md";
-                } else {
-                    btn.className = "flex-1 py-2 text-xs font-semibold rounded-xl transition-all duration-200 text-slate-400 hover:text-slate-200";
-                }
-            });
-
-            const labels = { daily: 'Today', weekly: 'This Week', monthly: 'This Month' };
-            document.getElementById('period-label').textContent = labels[period];
-
-            renderDashboard();
+        function renderData(period) {
+            const d = liveData[period] || liveData.monthly;
+            document.getElementById('card-title-text').innerText = period.toUpperCase() + ' NET BALANCE';
+            document.getElementById('net-balance').innerText = d.net + ' ETB';
+            document.getElementById('total-income').innerText = '+' + d.income + ' ETB';
+            document.getElementById('total-expense').innerText = '-' + d.expense + ' ETB';
+            
+            document.getElementById('cat-transport').innerText = d.transport + ' ETB';
+            document.getElementById('cat-bills').innerText = d.bills + ' ETB';
+            document.getElementById('cat-general').innerText = d.general + ' ETB';
         }
 
-        function renderDashboard() {
-            const data = sampleData[currentPeriod];
-            const net = data.income - data.expense;
-
-            document.getElementById('net-balance').textContent = net.toLocaleString('en-US', { minimumFractionDigits: 2 });
-            document.getElementById('total-income').textContent = `${data.income.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB`;
-            document.getElementById('total-expense').textContent = `${data.expense.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB`;
-
-            // Render Category Bars
-            const totalExp = data.expense || 1; // avoid divide by zero
-            const transportPct = Math.min(100, Math.round((data.categories.transport / totalExp) * 100));
-            const billsPct = Math.min(100, Math.round((data.categories.bills / totalExp) * 100));
-            const generalPct = Math.min(100, Math.round((data.categories.general / totalExp) * 100));
-
-            document.getElementById('cat-transport-amount').textContent = `${data.categories.transport.toFixed(2)} ETB`;
-            document.getElementById('cat-transport-bar').style.width = `${transportPct}%`;
-
-            document.getElementById('cat-bills-amount').textContent = `${data.categories.bills.toFixed(2)} ETB`;
-            document.getElementById('cat-bills-bar').style.width = `${billsPct}%`;
-
-            document.getElementById('cat-general-amount').textContent = `${data.categories.general.toFixed(2)} ETB`;
-            document.getElementById('cat-general-bar').style.width = `${generalPct}%`;
-
-            // Render Transactions List
-            const txListEl = document.getElementById('tx-list');
-            txListEl.innerHTML = '';
-
-            if (data.transactions.length === 0) {
-                txListEl.innerHTML = `<div class="text-center py-6 text-xs text-slate-500">No transactions recorded for this period.</div>`;
-                return;
-            }
-
-            data.transactions.forEach(tx => {
-                const isInc = tx.type === 'income';
-                const badgeColor = isInc ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-rose-400 bg-rose-500/10 border-rose-500/20';
-                const iconName = isInc ? 'arrow-down-left' : 'arrow-up-right';
-
-                const html = `
-                    <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-900/40 border border-slate-800/60">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-9 h-9 rounded-xl flex items-center justify-center border ${badgeColor}">
-                                <i data-lucide="${iconName}" class="w-4 h-4"></i>
-                            </div>
-                            <div>
-                                <p class="text-xs font-bold text-slate-200">${tx.bank} <span class="text-[10px] font-normal text-slate-400">• ${tx.category}</span></p>
-                                <p class="text-[10px] text-slate-400">${tx.note} (${tx.date})</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-xs font-bold ${isInc ? 'text-emerald-400' : 'text-slate-200'}">
-                                ${isInc ? '+' : '-'}${tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                            </p>
-                            <p class="text-[9px] text-slate-500 uppercase font-semibold">ETB</p>
-                        </div>
-                    </div>
-                `;
-                txListEl.insertAdjacentHTML('beforeend', html);
-            });
-
-            lucide.createIcons();
+        function switchTab(period) {
+            currentPeriod = period;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            renderData(period);
+            if(tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
         }
 
         function triggerAction(action) {
-            if (tg) {
-                tg.HapticFeedback.impactOccurred('medium');
-                if (action === 'backup') {
-                    tg.sendData(JSON.stringify({ action: 'backup_db' }));
-                } else if (action === 'csv') {
-                    tg.sendData(JSON.stringify({ action: 'export_csv' }));
-                }
+            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            if (action === 'backup') {
+                tg.sendData("backup_db");
             } else {
-                alert(`Triggered action: ${action.toUpperCase()}`);
+                window.location.reload();
             }
         }
 
-        function syncData() {
-            if (tg) tg.HapticFeedback.notificationOccurred('success');
-            const syncBtn = document.getElementById('sync-btn');
-            syncBtn.classList.add('animate-spin');
-            setTimeout(() => {
-                syncBtn.classList.remove('animate-spin');
-                renderDashboard();
-            }, 600);
-        }
-
-        // Initial Load
-        window.onload = () => {
-            renderDashboard();
-            lucide.createIcons();
-        };
+        // Initial render
+        renderData('monthly');
     </script>
 </body>
 </html>
